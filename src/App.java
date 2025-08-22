@@ -224,6 +224,7 @@ public class App {
                 }
                 if (incorrectGuessLetterSet.contains(guess)) {
                     System.out.println("Letter already tried.");
+                    continue;
                 }
                 return guess;
             }
