@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class App {
     /** Maximum number of incorrect guesses allowed. */
-    private static final int MAX_GUESSES = 6;
+    private static final Integer MAX_GUESSES = 6;
     /** Path to the dictionary file containing words. */
     private static final String DICTIONARY_FILE_PATH = "data/dictionary.txt";
 
@@ -78,29 +78,32 @@ public class App {
      * @param inputScanner scanner for user input
      */
     private static void startNewRound(String secretWord, Scanner inputScanner) {
-        int wrongGuessCount = 0;
-        Set<Character> guessedLetterSet = new HashSet<>();
+        Integer incorrectGuessCount = 0;
+        Set<Character> correctGuessLetterSet = new HashSet<>();
+        Set<Character> incorrectGuessLetterSet = new HashSet<>();
         GameStatus status = GameStatus.IN_PROGRESS;
 
         while (status == GameStatus.IN_PROGRESS) {
-            displayStatus(secretWord, guessedLetterSet, wrongGuessCount);
-            Character guess = getUserGuess(inputScanner, guessedLetterSet);
+
+            displayStatus(secretWord, correctGuessLetterSet, incorrectGuessLetterSet, incorrectGuessCount);
+            Character guess = getUserGuess(inputScanner, correctGuessLetterSet, incorrectGuessLetterSet);
 
             if (secretWord.contains(String.valueOf(guess))) {
-                guessedLetterSet.add(guess);
+                correctGuessLetterSet.add(guess);
             } else {
-                wrongGuessCount++;
+                incorrectGuessLetterSet.add(guess);
+                incorrectGuessCount = incorrectGuessLetterSet.size();
             }
 
-            status = calculateGameStatus(secretWord, guessedLetterSet, wrongGuessCount);
+            status = calculateGameStatus(secretWord, correctGuessLetterSet, incorrectGuessCount);
             if (status == GameStatus.LOST) {
-                displayHangman(wrongGuessCount);
+                displayHangman(incorrectGuessCount);
                 System.out.println(GameStatus.LOST);
                 System.out.println("Secret word is " + secretWord);
                 return;
             }
             if (status == GameStatus.WON) {
-                displaySecretWord(secretWord, guessedLetterSet);
+                displaySecretWord(secretWord, correctGuessLetterSet);
                 System.out.println(GameStatus.WON);
                 return;
             }
@@ -110,17 +113,17 @@ public class App {
     /**
      * Calculates the current game status based on guesses and secret word.
      * 
-     * @param secretWord       the word to guess
-     * @param guessedLetterSet set of guessed letters
-     * @param wrongGuessCount  number of incorrect guesses
+     * @param secretWord            the word to guess
+     * @param correctGuessLetterSet set of guessed letters
+     * @param incorrectGuessCount   number of incorrect guesses
      * @return current game status (IN_PROGRESS, WON, LOST)
      */
-    private static GameStatus calculateGameStatus(String secretWord, Set<Character> guessedLetterSet,
-            int wrongGuessCount) {
-        if (wrongGuessCount == MAX_GUESSES)
+    private static GameStatus calculateGameStatus(String secretWord, Set<Character> correctGuessLetterSet,
+            Integer incorrectGuessCount) {
+        if (incorrectGuessCount == MAX_GUESSES)
             return GameStatus.LOST;
         for (Character character : secretWord.toCharArray()) {
-            if (!guessedLetterSet.contains(character))
+            if (!correctGuessLetterSet.contains(character))
                 return GameStatus.IN_PROGRESS;
         }
         return GameStatus.WON;
@@ -130,26 +133,33 @@ public class App {
      * Displays the current game status, including hangman figure and secret word
      * progress.
      * 
-     * @param secretWord       the word to guess
-     * @param guessedLetterSet set of guessed letters
-     * @param wrongGuessCount  number of incorrect guesses
+     * @param secretWord              the word to guess
+     * @param correctGuessLetterSet   set of guessed letters
+     * @param incorrectGuessLetterSet set of incorrectly guessed letters
+     * @param incorrectGuessCount     number of incorrect guesses
      */
-    private static void displayStatus(String secretWord, Set<Character> guessedLetterSet, int wrongGuessCount) {
-        displayHangman(wrongGuessCount);
-        displaySecretWord(secretWord, guessedLetterSet);
+    private static void displayStatus(String secretWord, Set<Character> correctGuessLetterSet,
+            Set<Character> incorrectGuessLetterSet, Integer incorrectGuessCount) {
+        displayHangman(incorrectGuessCount);
+        displaySecretWord(secretWord, correctGuessLetterSet);
+        displayWrongGuesses(incorrectGuessLetterSet);
+    }
+
+    private static void displayWrongGuesses(Set<Character> incorrectGuessLetterSet) {
+        System.out.println("Incorrect guesses: " + incorrectGuessLetterSet);
     }
 
     /**
      * Displays the secret word with guessed letters revealed and unguessed letters
      * as asterisks.
      * 
-     * @param secretWord       the word to guess
-     * @param guessedLetterSet set of guessed letters
+     * @param secretWord            the word to guess
+     * @param correctGuessLetterSet set of guessed letters
      */
-    private static void displaySecretWord(String secretWord, Set<Character> guessedLetterSet) {
+    private static void displaySecretWord(String secretWord, Set<Character> correctGuessLetterSet) {
         StringBuilder output = new StringBuilder();
         for (Character character : secretWord.toCharArray()) {
-            output.append(guessedLetterSet.contains(character) ? character : "*");
+            output.append(correctGuessLetterSet.contains(character) ? character : "*");
         }
         System.out.println("Secret word: " + output);
     }
@@ -157,31 +167,31 @@ public class App {
     /**
      * Displays the hangman figure based on the number of incorrect guesses.
      * 
-     * @param wrongGuessCount number of incorrect guesses
+     * @param incorrectGuessCount number of incorrect guesses
      */
-    private static void displayHangman(int wrongGuessCount) {
-        System.out.println(buildHangmanFigure(wrongGuessCount));
+    private static void displayHangman(int incorrectGuessCount) {
+        System.out.println(buildHangmanFigure(incorrectGuessCount));
     }
 
     /**
      * Builds the hangman figure as a string based on the number of incorrect
      * guesses.
      * 
-     * @param wrongGuessCount number of incorrect guesses
+     * @param incorrectGuessCount number of incorrect guesses
      * @return string representation of the hangman figure
      */
-    private static String buildHangmanFigure(int wrongGuessCount) {
+    private static String buildHangmanFigure(int incorrectGuessCount) {
         StringBuilder hangman = new StringBuilder();
 
         hangman.append(" -------\n");
-        hangman.append(" |     ").append(wrongGuessCount > 0 ? "O" : "").append("\n");
+        hangman.append(" |     ").append(incorrectGuessCount > 0 ? "O" : "").append("\n");
         hangman.append(" |    ")
-                .append(wrongGuessCount > 1 ? "/" : "")
-                .append(wrongGuessCount > 2 ? "|" : "")
-                .append(wrongGuessCount > 3 ? "\\" : "").append("\n");
+                .append(incorrectGuessCount > 1 ? "/" : "")
+                .append(incorrectGuessCount > 2 ? "|" : "")
+                .append(incorrectGuessCount > 3 ? "\\" : "").append("\n");
         hangman.append(" |    ")
-                .append(wrongGuessCount > 4 ? "/ " : "")
-                .append(wrongGuessCount > 5 ? "\\" : "").append("\n");
+                .append(incorrectGuessCount > 4 ? "/ " : "")
+                .append(incorrectGuessCount > 5 ? "\\" : "").append("\n");
         hangman.append("/_\\");
 
         return hangman.toString();
@@ -191,11 +201,12 @@ public class App {
      * Prompts the user for a single letter guess, validating input and checking for
      * duplicates.
      * 
-     * @param inputScanner     scanner for user input
-     * @param guessedLetterSet set of already guessed letters
+     * @param inputScanner          scanner for user input
+     * @param correctGuessLetterSet set of already guessed letters
      * @return valid, unique letter guess
      */
-    private static Character getUserGuess(Scanner inputScanner, Set<Character> guessedLetterSet) {
+    private static Character getUserGuess(Scanner inputScanner, Set<Character> correctGuessLetterSet,
+            Set<Character> incorrectGuessLetterSet) {
         while (true) {
             System.out.print("Enter your guess: ");
             String input = inputScanner.nextLine().trim().toLowerCase();
@@ -207,9 +218,12 @@ public class App {
 
             Character guess = input.charAt(0);
             if (input.length() == 1 && Character.isLetter(guess) && ((guess >= 'a') && (guess <= 'z'))) {
-                if (guessedLetterSet.contains(guess)) {
+                if (correctGuessLetterSet.contains(guess)) {
                     System.out.println("Letter already guessed.");
                     continue;
+                }
+                if (incorrectGuessLetterSet.contains(guess)) {
+                    System.out.println("Letter already tried.");
                 }
                 return guess;
             }
