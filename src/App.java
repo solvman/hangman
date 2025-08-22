@@ -206,7 +206,7 @@ public class App {
             }
 
             Character guess = input.charAt(0);
-            if (input.length() == 1 && Character.isLetter(guess)) {
+            if (input.length() == 1 && Character.isLetter(guess) && ((guess >= 'a') && (guess <= 'z'))) {
                 if (guessedLetterSet.contains(guess)) {
                     System.out.println("Letter already guessed.");
                     continue;
@@ -214,7 +214,7 @@ public class App {
                 return guess;
             }
 
-            System.out.println("Invalid input. Enter single letter only.");
+            System.out.println("Invalid input. Enter single English letter only (a-z).");
         }
     }
 
