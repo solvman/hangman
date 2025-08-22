@@ -201,8 +201,9 @@ public class App {
      * Prompts the user for a single letter guess, validating input and checking for
      * duplicates.
      * 
-     * @param inputScanner          scanner for user input
-     * @param correctGuessLetterSet set of already guessed letters
+     * @param inputScanner            scanner for user input
+     * @param correctGuessLetterSet   set of already guessed letters
+     * @param incorrectGuessLetterSet set of already incorrectly guessed letters
      * @return valid, unique letter guess
      */
     private static Character getUserGuess(Scanner inputScanner, Set<Character> correctGuessLetterSet,
